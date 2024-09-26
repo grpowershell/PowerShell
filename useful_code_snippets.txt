@@ -65,3 +65,34 @@ $account += New-Object -TypeName psobject -Property @{User="Jimbo3"; Password="i
 foreach($item in $items){
   $account += New-Object -TypeName psobject -Property @{User="Jimbo"; Password="1234"}
 }
+
+# DSC
+Configuration FileCopy # Name of the configuration
+{  
+    param( # Configuration parameters
+    	[Parameter(Mandatory=$true)] 
+    	[String[]]$Servers, 
+    	[Parameter(Mandatory=$true)] 
+    	[String]$SourceFile, 
+    	[Parameter(Mandatory=$true)] 
+    	[String]$DestinationFile
+    )
+
+    Node $Servers # Node deploys the configuration on machine(s)
+    {  
+	    File 'CopyHostFile'
+        {    
+	        Ensure = "Present" 
+	        SourcePath = $SourceFile
+	        DestinationPath = $DestinationFile
+	    }
+        
+        Service 'StartService'
+        {
+            Name        = "Bits"
+            StartupType = "Manual"
+            State       = "Running"
+        }
+    }
+}   
+FileCopy -Servers localhost -SourceFile C:\test\out.txt -DestinationFile C:\test\filemov -OutputPath C:\test\mof -Verbose
